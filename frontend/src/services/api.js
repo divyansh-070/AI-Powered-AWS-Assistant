@@ -9,6 +9,7 @@ export const estimateCost = (templateYaml) => api.post('/estimate-cost', { templ
 export const securityCheck = (templateYaml) => api.post('/security-check', { template_yaml: templateYaml });
 export const generateDiagram = (templateYaml) => api.post('/generate-diagram', { template_yaml: templateYaml });
 export const getHistory = () => api.get('/history');
+export const getHistoryDetail = (id) => api.get(`/history/${id}`);
 export const downloadPackage = (id) => api.get(`/download/${id}`, { responseType: 'blob' });
 
 export default api;

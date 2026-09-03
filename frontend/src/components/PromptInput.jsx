@@ -8,8 +8,14 @@ const SUGGESTIONS = [
   "Create a VPC with public and private subnets"
 ];
 
-export default function PromptInput({ onSubmit, isLoading, resetKey }) {
-  const [prompt, setPrompt] = useState("");
+export default function PromptInput({ onSubmit, isLoading, resetKey, initialPrompt }) {
+  const [prompt, setPrompt] = useState(initialPrompt || "");
+
+  useEffect(() => {
+    if (initialPrompt !== undefined) {
+      setPrompt(initialPrompt);
+    }
+  }, [initialPrompt]);
 
   useEffect(() => {
     if (resetKey) {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import PromptInput from '../components/PromptInput';
 import ResultsTabs from '../components/ResultsTabs';
@@ -9,13 +9,30 @@ import { FileCode, ShieldCheck, DollarSign } from 'lucide-react';
 export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState(null);
+  const [initialPrompt, setInitialPrompt] = useState("");
   const [resetKey, setResetKey] = useState(0);
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+
+  // Listen for navigation state from History page
+  useEffect(() => {
+    if (location.state && location.state.templateYaml) {
+      setInitialPrompt(location.state.prompt || "");
+      setResults({
+        templateYaml: location.state.templateYaml,
+        templateJson: location.state.templateJson || {},
+        explanation: location.state.explanation || "",
+        promptId: location.state.promptId,
+      });
+      toast.success("Loaded template from history!");
+    }
+  }, [location.state]);
 
   // Listen for ?new=true from "New Idea" sidebar button
   useEffect(() => {
     if (searchParams.get('new') === 'true') {
       setResults(null);
+      setInitialPrompt("");
       setResetKey(prev => prev + 1);
       setSearchParams({});
       toast.success('Started a new architecture workspace');
@@ -71,7 +88,7 @@ export default function Dashboard() {
       </div>
       
       {/* Input Form */}
-      <PromptInput onSubmit={handleGenerate} isLoading={isLoading} resetKey={resetKey} />
+      <PromptInput onSubmit={handleGenerate} isLoading={isLoading} resetKey={resetKey} initialPrompt={initialPrompt} />
       
       {/* Results Container */}
       <ResultsTabs results={results} />

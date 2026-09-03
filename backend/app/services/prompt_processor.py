@@ -12,12 +12,6 @@ Follow AWS security best practices (e.g., restrict security group ingress, enabl
 Output ONLY the raw YAML code inside a markdown code block. Do not include any explanations.
 """
 
-# ──────────────────────────────────────────────────────────────
-# Custom YAML Loader that supports CloudFormation intrinsic functions
-# CloudFormation uses YAML tags like !Ref, !Sub, !GetAtt, etc.
-# yaml.safe_load() chokes on these, so we register custom constructors.
-# ──────────────────────────────────────────────────────────────
-
 CFN_TAGS = [
     "!Ref", "!Sub", "!GetAtt", "!Join", "!Select", "!Split",
     "!FindInMap", "!GetAZs", "!ImportValue", "!Condition",
@@ -45,7 +39,6 @@ def _cfn_tag_constructor(loader, tag_suffix, node):
     return {tag_suffix: None}
 
 
-# Register all CloudFormation tags
 for tag in CFN_TAGS:
     tag_name = tag[1:]  # strip the '!'
     CfnLoader.add_multi_constructor(
@@ -53,16 +46,25 @@ for tag in CFN_TAGS:
         lambda loader, suffix, node, t=tag_name: _cfn_tag_constructor(loader, t, node),
     )
 
-# Also register a catch-all for any other ! tags we might have missed
 CfnLoader.add_multi_constructor(
     "!",
     lambda loader, suffix, node: _cfn_tag_constructor(loader, suffix, node),
 )
 
 
+def safe_load_yaml(yaml_content: str) -> dict:
+    """Parse YAML string with CloudFormation tag support into dict."""
+    if not yaml_content:
+        return {}
+    try:
+        data = yaml.load(yaml_content, Loader=CfnLoader)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
 def extract_yaml_from_response(response: str) -> str:
     """Extract YAML code from markdown fences in the response."""
-    # Match ```yaml ... ``` or ``` ... ```
     pattern = r"```(?:yaml|yml)?\s*\n?(.*?)```"
     match = re.search(pattern, response, re.DOTALL)
     if match:
@@ -77,18 +79,16 @@ async def process_prompt(user_prompt: str) -> Dict[str, Any]:
 
     # Parse YAML with CloudFormation tag support
     try:
-        json_content = yaml.load(yaml_content, Loader=CfnLoader)
-    except yaml.YAMLError as e:
+        json_content = safe_load_yaml(yaml_content)
+    except Exception as e:
         raise ValueError(f"Failed to parse generated YAML: {e}")
 
     if not isinstance(json_content, dict):
         raise ValueError("Generated template is not a valid dictionary")
 
-    # Check for essential CloudFormation keys
     if 'Resources' not in json_content:
         raise ValueError("Generated template missing 'Resources' key")
 
-    # Add AWSTemplateFormatVersion if missing
     if 'AWSTemplateFormatVersion' not in json_content:
         json_content['AWSTemplateFormatVersion'] = '2010-09-09'
         yaml_content = f"AWSTemplateFormatVersion: '2010-09-09'\n{yaml_content}"

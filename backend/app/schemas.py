@@ -38,6 +38,8 @@ class DiagramResponse(BaseModel):
 class HistoryItem(BaseModel):
     id: int
     prompt_text: str
+    generated_template: Optional[str] = None
+    explanation: Optional[str] = None
     created_at: datetime
     has_template: bool
 
