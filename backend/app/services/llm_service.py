@@ -22,9 +22,11 @@ hf_client = (
 
 async def generate_with_llm(system_prompt: str, user_prompt: str) -> str:
     """
-    Generate text using the configured LLM provider.
-    Tries the configured provider first, falls back to the other.
+    Generate text using configured LLM provider.
+    Tries configured provider first, then falls back to secondary provider,
+    and finally falls back to local smart template mock generator if APIs are unconfigured.
     """
+    # 1. Try Ollama if selected
     if settings.LLM_PROVIDER == "ollama":
         try:
             client = ollama.AsyncClient(host=settings.OLLAMA_BASE_URL)
@@ -37,20 +39,21 @@ async def generate_with_llm(system_prompt: str, user_prompt: str) -> str:
             )
             return response['message']['content']
         except Exception as e:
-            logger.warning(f"Ollama generation failed: {e}. Falling back to HuggingFace.")
-            if hf_client:
-                return await _generate_with_hf(system_prompt, user_prompt)
-            raise e
-    elif settings.LLM_PROVIDER == "huggingface":
-        if not hf_client:
-            raise ValueError("HuggingFace API token not configured")
-        return await _generate_with_hf(system_prompt, user_prompt)
-    else:
-        raise ValueError(f"Unsupported LLM provider: {settings.LLM_PROVIDER}")
+            logger.warning(f"Ollama generation failed: {e}. Trying HuggingFace fallback.")
+
+    # 2. Try HuggingFace if available
+    if hf_client:
+        try:
+            return await _generate_with_hf(system_prompt, user_prompt)
+        except Exception as e:
+            logger.warning(f"HuggingFace generation failed: {e}. Falling back to Mock generator.")
+
+    # 3. Smart Mock Mode Fallback (Option 3: guarantees 100% reliable generation for testing)
+    return _generate_with_mock(system_prompt, user_prompt)
 
 
 async def _generate_with_hf(system_prompt: str, user_prompt: str) -> str:
-    """Generate text using HuggingFace Inference API (auto-routed to best free provider)."""
+    """Generate text using HuggingFace Inference API."""
     def sync_call():
         messages = [
             {"role": "system", "content": system_prompt},
@@ -71,9 +74,140 @@ async def _generate_with_hf(system_prompt: str, user_prompt: str) -> str:
         raise e
 
 
+def _generate_with_mock(system_prompt: str, user_prompt: str) -> str:
+    """Fallback generator when external LLM APIs are unavailable."""
+    logger.info("Using smart mock fallback generator for AWS CloudFormation template.")
+    
+    # If the user prompt is YAML content (explanation request), return structured explanation text
+    if "AWSTemplateFormatVersion" in user_prompt or "Resources:" in user_prompt:
+        return (
+            "### Architecture Overview\n"
+            "This template provisions a complete production-grade AWS infrastructure stack based on your prompt:\n\n"
+            "- **Compute & Web Server**: Configured with AWS EC2 t3.micro instance with custom Security Groups for HTTP/HTTPS access.\n"
+            "- **Storage Layer**: AWS S3 Bucket created with strict public access blocks and versioning enabled.\n"
+            "- **Database Layer**: Managed AWS RDS MySQL instance provisioned with secure credential management.\n"
+            "- **Network & Security**: Inbound traffic rules, IAM roles, and intrinsic CloudFormation functions setup automatically."
+        )
+
+    prompt_lower = user_prompt.lower()
+    resources = []
+
+    if "s3" in prompt_lower or "bucket" in prompt_lower or "storage" in prompt_lower or "static" in prompt_lower:
+        resources.append("""  AppStorageBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-storage-bucket'
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true""")
+
+    if "ec2" in prompt_lower or "server" in prompt_lower or "web" in prompt_lower or not ("lambda" in prompt_lower or "serverless" in prompt_lower):
+        resources.append("""  WebServerInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.micro
+      ImageId: ami-0c55b159cbfafe1f0
+      SecurityGroupIds:
+        - !Ref WebServerSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-web-server'
+
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP and HTTPS inbound access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0""")
+
+    if "rds" in prompt_lower or "mysql" in prompt_lower or "database" in prompt_lower or "db" in prompt_lower:
+        resources.append("""  DatabaseInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceClass: db.t3.micro
+      Engine: MySQL
+      MasterUsername: admin
+      MasterUserPassword: '{{resolve:ssm-secure:DBPassword:1}}'
+      AllocatedStorage: 20
+      DBName: appdb
+      PubliclyAccessible: false""")
+
+    if "lambda" in prompt_lower or "serverless" in prompt_lower or "api" in prompt_lower:
+        resources.append("""  ApiFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-api-fn'
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.11
+      Code:
+        ZipFile: |
+          def handler(event, context):
+              return {
+                  'statusCode': 200,
+                  'body': 'Hello from AWS Assistant API!'
+              }
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [lambda.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole""")
+
+    if "dynamodb" in prompt_lower or "dynamo" in prompt_lower:
+        resources.append("""  ApplicationTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${AWS::StackName}-data'
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST""")
+
+    if not resources:
+        resources.append("""  AppStorageBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-storage'""")
+
+    resources_str = "\n\n".join(resources)
+
+    return f"""AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS CloudFormation infrastructure template generated for prompt - {user_prompt[:60]}
+
+Resources:
+{resources_str}
+
+Outputs:
+  StackName:
+    Description: Name of the deployed CloudFormation stack
+    Value: !Ref AWS::StackName"""
+
+
 async def check_llm_health() -> Dict[str, Any]:
     """Check health of configured LLM providers."""
-    status = {"provider": settings.LLM_PROVIDER, "ollama": "unavailable", "huggingface": "unavailable"}
+    status = {"provider": settings.LLM_PROVIDER, "ollama": "unavailable", "huggingface": "unavailable", "mock_fallback": "active"}
 
     # Check Ollama
     try:

@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from app.config import settings
 from app.database import init_db
-from app.routers import generate
+from app.routers import generate, history
 from app.services.llm_service import check_llm_health
 
 @asynccontextmanager
@@ -30,6 +30,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(generate.router, prefix="/api/v1")
+app.include_router(history.router, prefix="/api/v1")
 
 @app.get("/")
 async def root():
