@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import TemplateViewer from './TemplateViewer';
 import ExplanationPanel from './ExplanationPanel';
+import { FileCode, Lightbulb, DollarSign, ShieldCheck, Network } from 'lucide-react';
 
 const TABS = [
-  { id: 'template', label: 'Template' },
-  { id: 'explanation', label: 'Explanation' },
-  { id: 'cost', label: 'Cost Estimate' },
-  { id: 'security', label: 'Security Report' },
-  { id: 'diagram', label: 'Architecture Diagram' }
+  { id: 'template', label: 'Template', icon: FileCode },
+  { id: 'explanation', label: 'Explanation', icon: Lightbulb },
+  { id: 'cost', label: 'Cost Estimate', icon: DollarSign },
+  { id: 'security', label: 'Security Report', icon: ShieldCheck },
+  { id: 'diagram', label: 'Architecture Diagram', icon: Network }
 ];
 
 export default function ResultsTabs({ results }) {
@@ -18,26 +19,31 @@ export default function ResultsTabs({ results }) {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[500px]">
-      <div className="flex overflow-x-auto border-b border-slate-200 bg-slate-50">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-6 py-4 text-sm font-medium whitespace-nowrap transition-colors relative ${
-              activeTab === tab.id
-                ? 'text-blue-600 bg-white'
-                : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'
-            }`}
-          >
-            {tab.label}
-            {activeTab === tab.id && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
-            )}
-          </button>
-        ))}
+    <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden flex flex-col min-h-[500px] shadow-sm">
+      {/* Tab Navigation Header */}
+      <div className="flex overflow-x-auto border-b border-zinc-800 bg-zinc-950 p-1.5 gap-1">
+        {TABS.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-3.5 py-2 text-xs font-medium rounded-md whitespace-nowrap transition-colors ${
+                isActive
+                  ? 'bg-zinc-800 text-white border border-zinc-700/80 shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5 text-zinc-400" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
-      <div className="flex-1 p-6 bg-slate-50/50">
+
+      {/* Tab Content Body */}
+      <div className="flex-1 p-5 bg-zinc-950">
         {activeTab === 'template' && (
           <TemplateViewer templateYaml={results.templateYaml} templateJson={results.templateJson} />
         )}
@@ -45,10 +51,12 @@ export default function ResultsTabs({ results }) {
           <ExplanationPanel explanation={results.explanation} />
         )}
         {['cost', 'security', 'diagram'].includes(activeTab) && (
-          <div className="flex flex-col items-center justify-center h-full text-slate-500 bg-white rounded-lg border border-slate-200 border-dashed p-12">
-            <p className="mb-4">No data available for {TABS.find(t => t.id === activeTab)?.label} yet.</p>
-            <button className="px-4 py-2 bg-blue-50 text-blue-600 font-medium rounded-md hover:bg-blue-100 transition-colors">
-              Generate
+          <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-zinc-400 bg-zinc-900/40 rounded-lg border border-zinc-800 border-dashed p-8 text-center">
+            <p className="text-xs mb-3 text-zinc-400">
+              No data available for {TABS.find(t => t.id === activeTab)?.label} yet.
+            </p>
+            <button className="px-3 py-1.5 text-xs font-medium bg-zinc-800 border border-zinc-700 text-zinc-200 rounded-md hover:bg-zinc-700 transition-colors">
+              Generate Analysis
             </button>
           </div>
         )}
