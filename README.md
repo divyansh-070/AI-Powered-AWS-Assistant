@@ -247,20 +247,56 @@ npm run build
 
 ---
 
+## 🌐 Custom Backend & Remote URL Configuration
+
+To connect the frontend to a remote/cloud backend server (instead of `http://localhost:8000`), configure the environment variables:
+
+### 1. Local Frontend connected to Remote Backend
+Create `frontend/.env`:
+```env
+VITE_BACKEND_TARGET=https://your-backend-api.onrender.com
+```
+Then start Vite:
+```bash
+cd frontend
+npm run dev
+```
+
+### 2. Production Frontend (Netlify / Vercel) connected to Remote Backend
+Set environment variable in your Netlify or Vercel dashboard:
+```env
+VITE_API_BASE_URL=https://your-backend-api.onrender.com/api/v1
+```
+
+---
+
 ## 🚢 Deployment
 
-### Frontend → Vercel (Free)
-1. Push to GitHub
-2. Import project in [Vercel](https://vercel.com)
-3. Set root directory to `frontend`
-4. Deploy
+### 1. Backend → Render (Free Cloud API)
+1. Push your repository to GitHub.
+2. Create a new **Web Service** on [Render.com](https://render.com).
+3. Set **Root Directory** to `backend`.
+4. **Build Command**: `pip install -r requirements.txt`
+5. **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+6. Set Environment Variables:
+   - `LLM_PROVIDER`: `huggingface`
+   - `HF_API_TOKEN`: `your_huggingface_api_token`
+   - `CORS_ORIGINS`: `https://your-frontend.netlify.app`
+   - `DATABASE_URL`: `sqlite+aiosqlite:///./data/app.db`
 
-### Backend → Render (Free)
-1. Push to GitHub
-2. Create a new Web Service on [Render](https://render.com)
-3. Set root directory to `backend`
-4. Build command: `pip install -r requirements.txt`
-5. Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+### 2. Frontend → Netlify (Free Web Hosting)
+1. Push code to GitHub (includes pre-configured `netlify.toml`).
+2. Log into [Netlify.com](https://netlify.com) and click **Add new site** → **Import an existing project**.
+3. Set **Base directory** to `frontend`, **Build command** to `npm run build`, and **Publish directory** to `frontend/dist`.
+4. Update `netlify.toml` with your deployed Render backend URL:
+   ```toml
+   [[redirects]]
+     from = "/api/*"
+     to = "https://your-backend-api.onrender.com/api/:splat"
+     status = 200
+     force = true
+   ```
+5. Deploy! Your Netlify web app will be live at `https://your-app-name.netlify.app`.
 
 ---
 
