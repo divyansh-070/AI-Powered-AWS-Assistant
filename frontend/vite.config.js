@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: process.env.VITE_BACKEND_TARGET || 'http://localhost:8000',
         changeOrigin: true,
       },
     },
