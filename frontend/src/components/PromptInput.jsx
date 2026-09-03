@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sparkles, ArrowUpRight } from 'lucide-react';
 
 const SUGGESTIONS = [
@@ -8,8 +8,14 @@ const SUGGESTIONS = [
   "Create a VPC with public and private subnets"
 ];
 
-export default function PromptInput({ onSubmit, isLoading }) {
+export default function PromptInput({ onSubmit, isLoading, resetKey }) {
   const [prompt, setPrompt] = useState("");
+
+  useEffect(() => {
+    if (resetKey) {
+      setPrompt("");
+    }
+  }, [resetKey]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

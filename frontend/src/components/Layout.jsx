@@ -1,5 +1,5 @@
-import { NavLink, Outlet } from 'react-router-dom';
-import { LayoutDashboard, History, Cloud, Activity } from 'lucide-react';
+import { NavLink, Link, Outlet } from 'react-router-dom';
+import { LayoutDashboard, History, Cloud, Activity, Plus } from 'lucide-react';
 
 export default function Layout() {
   return (
@@ -19,35 +19,47 @@ export default function Layout() {
           </div>
 
           {/* Navigation Links */}
-          <nav className="p-3 space-y-1">
-            <NavLink
-              to="/"
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm transition-colors ${
-                  isActive
-                    ? 'bg-zinc-800 text-white font-medium border border-zinc-700/60'
-                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'
-                }`
-              }
+          <div className="p-3 space-y-3">
+            {/* New Idea Primary Action Button */}
+            <Link
+              to="/?new=true"
+              className="flex items-center justify-center gap-2 w-full px-3.5 py-2.5 rounded-lg text-xs font-semibold bg-white text-zinc-950 hover:bg-zinc-200 transition-colors shadow-sm"
             >
-              <LayoutDashboard className="w-4 h-4" />
-              <span>Dashboard</span>
-            </NavLink>
+              <Plus className="w-4 h-4 text-zinc-950" />
+              <span>New Idea</span>
+            </Link>
 
-            <NavLink
-              to="/history"
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm transition-colors ${
-                  isActive
-                    ? 'bg-zinc-800 text-white font-medium border border-zinc-700/60'
-                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'
-                }`
-              }
-            >
-              <History className="w-4 h-4" />
-              <span>History</span>
-            </NavLink>
-          </nav>
+            <nav className="space-y-1">
+              <NavLink
+                to="/"
+                end
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm transition-colors ${
+                    isActive
+                      ? 'bg-zinc-800 text-white font-medium border border-zinc-700/60'
+                      : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'
+                  }`
+                }
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                <span>Dashboard</span>
+              </NavLink>
+
+              <NavLink
+                to="/history"
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm transition-colors ${
+                    isActive
+                      ? 'bg-zinc-800 text-white font-medium border border-zinc-700/60'
+                      : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'
+                  }`
+                }
+              >
+                <History className="w-4 h-4" />
+                <span>History</span>
+              </NavLink>
+            </nav>
+          </div>
         </div>
 
         {/* Footer Status */}

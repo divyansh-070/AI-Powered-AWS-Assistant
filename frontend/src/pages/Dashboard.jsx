@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import PromptInput from '../components/PromptInput';
 import ResultsTabs from '../components/ResultsTabs';
@@ -8,6 +9,18 @@ import { FileCode, ShieldCheck, DollarSign } from 'lucide-react';
 export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState(null);
+  const [resetKey, setResetKey] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Listen for ?new=true from "New Idea" sidebar button
+  useEffect(() => {
+    if (searchParams.get('new') === 'true') {
+      setResults(null);
+      setResetKey(prev => prev + 1);
+      setSearchParams({});
+      toast.success('Started a new architecture workspace');
+    }
+  }, [searchParams, setSearchParams]);
 
   const handleGenerate = async (prompt) => {
     setIsLoading(true);
@@ -58,7 +71,7 @@ export default function Dashboard() {
       </div>
       
       {/* Input Form */}
-      <PromptInput onSubmit={handleGenerate} isLoading={isLoading} />
+      <PromptInput onSubmit={handleGenerate} isLoading={isLoading} resetKey={resetKey} />
       
       {/* Results Container */}
       <ResultsTabs results={results} />
