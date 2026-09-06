@@ -75,3 +75,11 @@ yarn-error.log*
 # ========================
 .DS_Store
 ehthumbs.db
+
+# ========================
+# Presentations & Scripts
+# ========================
+*.pptx
+*.ppt
+generate_ppt.py
+
