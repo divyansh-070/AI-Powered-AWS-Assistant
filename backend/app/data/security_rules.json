@@ -1,0 +1,82 @@
+[
+  {
+    "id": "SEC-001",
+    "title": "Unrestricted SSH Access (Port 22)",
+    "resource_type": "AWS::EC2::SecurityGroup",
+    "severity": "HIGH",
+    "description": "Security Group allows SSH inbound traffic from anywhere (0.0.0.0/0 or ::/0). This exposes instances to automated brute-force attacks.",
+    "fix": "Restrict FromPort: 22 / ToPort: 22 CidrIp to a specific trusted IP range (e.g., 203.0.113.4/32) or utilize AWS Systems Manager Session Manager instead of public SSH."
+  },
+  {
+    "id": "SEC-002",
+    "title": "Unrestricted Windows RDP Access (Port 3389)",
+    "resource_type": "AWS::EC2::SecurityGroup",
+    "severity": "HIGH",
+    "description": "Security Group allows Remote Desktop (RDP) ingress from 0.0.0.0/0, leaving Windows instances vulnerable to credential stuffing.",
+    "fix": "Remove 0.0.0.0/0 on port 3389 and restrict to authorized corporate VPN CIDRs."
+  },
+  {
+    "id": "SEC-003",
+    "title": "All-Traffic Open Ingress (Protocol -1)",
+    "resource_type": "AWS::EC2::SecurityGroup",
+    "severity": "HIGH",
+    "description": "Security Group rule specifies IpProtocol: -1 with open CIDR (0.0.0.0/0), opening all 65,535 TCP/UDP ports to the public internet.",
+    "fix": "Replace open IpProtocol: -1 with specific protocol numbers and ports required by your application (e.g. TCP 443)."
+  },
+  {
+    "id": "SEC-004",
+    "title": "S3 Public Access Block Missing or Disabled",
+    "resource_type": "AWS::S3::Bucket",
+    "severity": "HIGH",
+    "description": "S3 bucket does not configure PublicAccessBlockConfiguration or has public block disabled, risking accidental data exposure.",
+    "fix": "Add PublicAccessBlockConfiguration with BlockPublicAcls: true, BlockPublicPolicy: true, IgnorePublicAcls: true, and RestrictPublicBuckets: true."
+  },
+  {
+    "id": "SEC-005",
+    "title": "S3 Server-Side Encryption (SSE) Not Configured",
+    "resource_type": "AWS::S3::Bucket",
+    "severity": "MEDIUM",
+    "description": "S3 bucket lacks explicit BucketEncryption configuration, allowing unencrypted object uploads.",
+    "fix": "Add BucketEncryption properties using ServerSideEncryptionConfiguration with AES256 or aws:kms SSEAlgorithm."
+  },
+  {
+    "id": "SEC-006",
+    "title": "RDS Database Publicly Accessible",
+    "resource_type": "AWS::RDS::DBInstance",
+    "severity": "HIGH",
+    "description": "RDS database instance has PubliclyAccessible set to true, assigning a public IP and exposing the database endpoint to the internet.",
+    "fix": "Set PubliclyAccessible: false and place the database within private isolated DBSubnetGroup subnets."
+  },
+  {
+    "id": "SEC-007",
+    "title": "RDS Database Storage Encryption Disabled",
+    "resource_type": "AWS::RDS::DBInstance",
+    "severity": "MEDIUM",
+    "description": "RDS instance does not have StorageEncrypted: true enabled, leaving data-at-rest unencrypted on storage volumes.",
+    "fix": "Enable StorageEncrypted: true in DBInstance Properties."
+  },
+  {
+    "id": "SEC-008",
+    "title": "EC2 EBS Block Device Unencrypted",
+    "resource_type": "AWS::EC2::Instance",
+    "severity": "MEDIUM",
+    "description": "EBS root or secondary volume attached to the EC2 instance lacks explicit encryption.",
+    "fix": "Specify Encrypted: true under BlockDeviceMappings -> Ebs properties."
+  },
+  {
+    "id": "SEC-009",
+    "title": "Unencrypted HTTP Allowed (Port 80)",
+    "resource_type": "AWS::EC2::SecurityGroup",
+    "severity": "LOW",
+    "description": "Inbound HTTP port 80 is open to 0.0.0.0/0 without an enforced TLS/HTTPS redirect listener on port 443.",
+    "fix": "Configure an Application Load Balancer with an HTTP-to-HTTPS redirect rule on port 443 using ACM SSL certificates."
+  },
+  {
+    "id": "SEC-010",
+    "title": "IAM Policy Uses Full Administrative Wildcards",
+    "resource_type": "AWS::IAM::Policy",
+    "severity": "MEDIUM",
+    "description": "IAM policy specifies Action: '*' and Resource: '*', granting overly broad administrative permissions.",
+    "fix": "Apply the principle of least privilege: scope down Action and Resource ARNs to only the specific services required."
+  }
+]

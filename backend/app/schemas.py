@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Dict, List, Literal, Optional
+from typing import Dict, List, Literal, Optional, Any
 from datetime import datetime
 
 class GenerateRequest(BaseModel):
@@ -11,15 +11,22 @@ class GenerateResponse(BaseModel):
     explanation: str
     prompt_id: int
 
+class TemplateAnalysisRequest(BaseModel):
+    template_yaml: Optional[str] = None
+    template_json: Optional[Dict[str, Any]] = None
+    region: Optional[str] = "us-east-1"
+
 class CostBreakdownItem(BaseModel):
     resource: str
     resource_type: str
     monthly_cost: float
+    details: Optional[str] = None
 
 class CostEstimateResponse(BaseModel):
     total_monthly: float
     breakdown: List[CostBreakdownItem]
     region: str
+    currency: Optional[str] = "USD"
 
 class SecurityIssue(BaseModel):
     severity: Literal["HIGH", "MEDIUM", "LOW"]

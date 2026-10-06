@@ -1,0 +1,79 @@
+{
+  "currency": "USD",
+  "hours_per_month": 730,
+  "default_region": "us-east-1",
+  "regions": {
+    "us-east-1": "US East (N. Virginia)",
+    "us-west-2": "US West (Oregon)",
+    "eu-west-1": "EU (Ireland)",
+    "ap-south-1": "Asia Pacific (Mumbai)"
+  },
+  "ec2_instances": {
+    "t2.nano": { "hourly": 0.0058, "monthly": 4.23, "vCPU": 1, "RAM_GB": 0.5 },
+    "t2.micro": { "hourly": 0.0116, "monthly": 8.47, "vCPU": 1, "RAM_GB": 1.0 },
+    "t2.small": { "hourly": 0.023, "monthly": 16.79, "vCPU": 1, "RAM_GB": 2.0 },
+    "t2.medium": { "hourly": 0.0464, "monthly": 33.87, "vCPU": 2, "RAM_GB": 4.0 },
+    "t2.large": { "hourly": 0.0928, "monthly": 67.74, "vCPU": 2, "RAM_GB": 8.0 },
+    "t3.nano": { "hourly": 0.0052, "monthly": 3.80, "vCPU": 2, "RAM_GB": 0.5 },
+    "t3.micro": { "hourly": 0.0104, "monthly": 7.59, "vCPU": 2, "RAM_GB": 1.0 },
+    "t3.small": { "hourly": 0.0208, "monthly": 15.18, "vCPU": 2, "RAM_GB": 2.0 },
+    "t3.medium": { "hourly": 0.0416, "monthly": 30.37, "vCPU": 2, "RAM_GB": 4.0 },
+    "t3.large": { "hourly": 0.0832, "monthly": 60.74, "vCPU": 2, "RAM_GB": 8.0 },
+    "t3.xlarge": { "hourly": 0.1664, "monthly": 121.47, "vCPU": 4, "RAM_GB": 16.0 },
+    "m5.large": { "hourly": 0.096, "monthly": 70.08, "vCPU": 2, "RAM_GB": 8.0 },
+    "m5.xlarge": { "hourly": 0.192, "monthly": 140.16, "vCPU": 4, "RAM_GB": 16.0 },
+    "c5.large": { "hourly": 0.085, "monthly": 62.05, "vCPU": 2, "RAM_GB": 4.0 },
+    "c5.xlarge": { "hourly": 0.170, "monthly": 124.10, "vCPU": 4, "RAM_GB": 8.0 }
+  },
+  "rds_instances": {
+    "db.t2.micro": { "hourly": 0.017, "monthly": 12.41, "vCPU": 1, "RAM_GB": 1.0 },
+    "db.t2.small": { "hourly": 0.034, "monthly": 24.82, "vCPU": 1, "RAM_GB": 2.0 },
+    "db.t3.micro": { "hourly": 0.017, "monthly": 12.41, "vCPU": 2, "RAM_GB": 1.0 },
+    "db.t3.small": { "hourly": 0.034, "monthly": 24.82, "vCPU": 2, "RAM_GB": 2.0 },
+    "db.t3.medium": { "hourly": 0.068, "monthly": 49.64, "vCPU": 2, "RAM_GB": 4.0 },
+    "db.t3.large": { "hourly": 0.136, "monthly": 99.28, "vCPU": 2, "RAM_GB": 8.0 },
+    "db.m5.large": { "hourly": 0.178, "monthly": 129.94, "vCPU": 2, "RAM_GB": 8.0 }
+  },
+  "ebs_storage_per_gb_month": {
+    "gp2": 0.10,
+    "gp3": 0.08,
+    "io1": 0.125,
+    "io2": 0.125,
+    "standard": 0.05
+  },
+  "s3_storage_per_gb_month": {
+    "standard": 0.023,
+    "infrequent_access": 0.0125,
+    "glacier": 0.004,
+    "default_baseline_gb": 50,
+    "default_monthly_baseline": 1.15
+  },
+  "networking": {
+    "nat_gateway": { "hourly": 0.045, "monthly": 32.85, "description": "NAT Gateway (per hour + data transfer)" },
+    "application_load_balancer": { "hourly": 0.0225, "monthly": 16.43, "description": "Application Load Balancer (ALB)" },
+    "network_load_balancer": { "hourly": 0.0225, "monthly": 16.43, "description": "Network Load Balancer (NLB)" },
+    "elastic_ip_idle": { "hourly": 0.005, "monthly": 3.65, "description": "Unattached Elastic IP" }
+  },
+  "serverless": {
+    "lambda_default_monthly": 1.50,
+    "api_gateway_default_monthly": 3.50,
+    "dynamodb_default_monthly": 2.50
+  },
+  "free_tier_resources": [
+    "AWS::EC2::VPC",
+    "AWS::EC2::Subnet",
+    "AWS::EC2::RouteTable",
+    "AWS::EC2::Route",
+    "AWS::EC2::SubnetRouteTableAssociation",
+    "AWS::EC2::InternetGateway",
+    "AWS::EC2::VPCGatewayAttachment",
+    "AWS::EC2::SecurityGroup",
+    "AWS::EC2::SecurityGroupIngress",
+    "AWS::EC2::SecurityGroupEgress",
+    "AWS::IAM::Role",
+    "AWS::IAM::Policy",
+    "AWS::IAM::InstanceProfile",
+    "AWS::SNS::Topic",
+    "AWS::SQS::Queue"
+  ]
+}
