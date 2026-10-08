@@ -110,7 +110,7 @@ npm run dev
 
 ### 4. Open the app
 
-Navigate to **http://localhost:5173** in your browser.
+Navigate to **http://localhost:5174** in your browser.
 
 ---
 
